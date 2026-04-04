@@ -53,8 +53,8 @@ env/
 Thumbs.db
 
 # Dataset & Database
-/dataset
-/chroma_db
+*dataset*/
+**/chroma_db/
 
 # Client Secret (Google)
 client_secrets.json
