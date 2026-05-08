@@ -1,0 +1,94 @@
+# Traffic Accident Investigation Pipeline 🚦🚗
+
+This project is an advanced AI-powered pipeline designed to analyze traffic accident reports, systematically identify root causes, and propose effective countermeasures. It utilizes a **Multi-Agent Evaluation Loop** (Actor-Critic architecture) combined with **Retrieval-Augmented Generation (RAG)** to ensure that the generated analysis is fact-based, theoretically sound, and formatted perfectly.
+
+---
+
+## 📍 Overview & Workflow Flowchart
+
+The pipeline processes unseen accident reports by pulling relevant historical context and theoretical engineering standards (if enabled). It then uses two distinct AI agents—a **Generator** and a **Judge**—to iteratively refine the causes and solutions until they meet strict engineering and structural criteria.
+
+```mermaid
+graph TD
+    %% Define styles
+    classDef input fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef process fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px;
+    classDef rag fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef agent1 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef agent2 fill:#ffebee,stroke:#d32f2f,stroke-width:2px;
+    classDef output fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px;
+
+    A[Test Accident Report JSON]:::input --> B[Information Extraction]:::process
+    
+    subgraph Retrieval-Augmented Generation RAG
+        B --> C[Retrieve Past Similar Cases<br>ChromaDB]:::rag
+        B --> D{Use Theoretical Background?}:::process
+        D -- Yes --> E[Retrieve Theoretical Factors/Solutions<br>ChromaDB]:::rag
+        D -- No --> F[Empty Background Context]:::process
+    end
+    
+    C --> G
+    E --> G
+    F --> G
+    
+    subgraph Multi-Agent Loop 1: Causes
+        G[LLM 1: Cause Generator]:::agent1 -- Generates Causes JSON --> H[LLM 2: Safety Auditor Judge]:::agent2
+        H -- Score < 8 + Feedback --> G
+        H -- Score >= 8 --> I[Causes Accepted]:::process
+    end
+    
+    I --> J
+    C --> J
+    E --> J
+    F --> J
+    
+    subgraph Multi-Agent Loop 2: Solutions
+        J[LLM 1: Solution Generator]:::agent1 -- Generates Solutions JSON --> K[LLM 2: Safety Auditor Judge]:::agent2
+        K -- Score < 8 + Feedback --> J
+        K -- Score >= 8 --> L[Solutions Accepted]:::process
+    end
+    
+    L --> M[Export to JSON & Aggregated CSV]:::output
+```
+
+---
+
+## 🛠️ Techniques & Tools Used
+
+### 1. Retrieval-Augmented Generation (RAG)
+To ensure the LLM doesn't "hallucinate" out of thin air, it is grounded with real data.
+- **Past Cases Retrieval:** The system embeds the text of the current accident report and searches `dataset/train/` for historically similar accidents to see what causes and solutions were applicable in the past.
+- **Theoretical Context Retrieval:** If the background variables (`use_factor_bg` and `use_solution_bg`) are enabled, the pipeline pulls formal traffic engineering principles from the catalog (`factor.json` / `solutions.json`).
+- **Tools Used:** 
+  - `LangChain` for orchestrating the RAG pipeline.
+  - `ChromaDB` as the local vector database.
+  - `HuggingFaceEmbeddings (BAAI/bge-m3)` for highly accurate, multi-lingual text embedding.
+
+### 2. Multi-Agent Evaluation Loop (Actor-Critic)
+Relying on a single prompt often leads to inconsistent formatting or hallucinated facts. This pipeline uses two specialized agents talking to each other:
+- **LLM 1 (The Generator):** Acts as a Traffic Safety AI Engineer. It drafts the causes and solutions based *strictly* on the provided facts and RAG context.
+- **LLM 2 (The Strict Judge):** Acts as a Senior Traffic Safety Auditor. It reviews LLM 1's output against strict grading criteria (e.g., *Is it 100% Thai? Is it hallucinating? Is the JSON schema perfectly plain text strings?*). It scores the output from 0 to 10.
+- **Feedback Loop:** If the score is below 8, the Judge provides reasoning. The Generator then takes this feedback to self-correct and try again (up to a maximum of 5 iterations).
+- **Tools Used:**
+  - `Ollama` running `Qwen2.5` locally, providing cost-free and privacy-preserving LLM inference.
+  - Separate system and user `.md` prompt templates located in the `prompts/` directory.
+
+### 3. Human-in-the-Loop (HITL)
+An optional safety mechanism where, even if the Judge accepts the output, a human expert can review the generated JSON and choose to accept it or provide manual feedback to force the Generator to iterate again.
+
+### 4. Data Extraction & Experiment Evaluation
+- The results of both the "No Background Data" and "With Background Data" configurations are run side-by-side.
+- The pipeline tracks the iteration history for *every single round* (what the Generator said, what the Judge scored, and the Judge's reasoning).
+- **Tools Used:** `Pandas` is used to export this massive amount of data into an easy-to-read, long-format `experiment_evaluation.csv` (with `utf-8-sig` encoding) that allows researchers to Pivot, Query, and evaluate whether adding Theoretical Background actually improves the LLM's accuracy or reduces the number of iterations required to pass the Judge.
+
+---
+
+## 📂 Project Structure
+
+- **`pipeline.ipynb`**: The core execution engine. Contains the setup for Models, Vector DBs, Agent Loops, and the automated Test File executor.
+- **`dataset/`**: The root data directory containing:
+  - `train/`: Past accident reports used as historical context for ChromaDB.
+  - `test/`: Unseen accident reports to be processed by the pipeline.
+  - `background/`: The theoretical catalogs (`factor.json`, `solutions.json`) injected to improve engineering accuracy.
+  - `output/`: The destination for the final `.json` reports and the aggregated `experiment_evaluation.csv`.
+- **`prompts/`**: Markdown (`.md`) files containing the precisely tuned instructions for both the Generator and the Judge. They use strict hierarchy formatting (`##`) and emphasis (`**BOLD**`) to tightly control the LLM's attention.
