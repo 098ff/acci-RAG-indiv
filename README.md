@@ -7,7 +7,6 @@ This project is an advanced AI-powered pipeline designed to analyze traffic acci
 ## 📍 Overview & Workflow Flowchart
 
 The pipeline processes unseen accident reports by pulling relevant historical context and theoretical engineering standards (if enabled). It then uses two distinct AI agents—a **Generator** and a **Judge**—to iteratively refine the causes and solutions until they meet strict engineering and structural criteria.
-
 ```mermaid
 graph TD
     %% Define styles
@@ -20,35 +19,36 @@ graph TD
 
     A[Test Accident Report JSON]:::input --> B[Information Extraction]:::process
     
-    subgraph Retrieval-Augmented Generation RAG
+    subgraph RAG Context Retrieval
         B --> C[Retrieve Past Similar Cases<br>ChromaDB]:::rag
         B --> D{Use Theoretical Background?}:::process
         D -- Yes --> E[Retrieve Theoretical Factors/Solutions<br>ChromaDB]:::rag
         D -- No --> F[Empty Background Context]:::process
+        
+        C --> G[Compile Full Prompt Context]:::process
+        E --> G
+        F --> G
     end
     
-    C --> G
-    E --> G
-    F --> G
+    G --> H
     
-    subgraph Multi-Agent Loop 1: Causes
-        G[LLM 1: Cause Generator]:::agent1 -- Generates Causes JSON --> H[LLM 2: Safety Auditor Judge]:::agent2
-        H -- Score < 8 + Feedback --> G
-        H -- Score >= 8 --> I[Causes Accepted]:::process
+    subgraph Phase 1: Cause Generation
+        H[LLM 1: Cause Generator]:::agent1 --> I[LLM 2: Safety Auditor Judge]:::agent2
+        I -- Score < 8 + Feedback --> H
     end
     
-    I --> J
-    C --> J
-    E --> J
-    F --> J
+    I -- Score >= 8 --> J[Causes Accepted]:::process
     
-    subgraph Multi-Agent Loop 2: Solutions
-        J[LLM 1: Solution Generator]:::agent1 -- Generates Solutions JSON --> K[LLM 2: Safety Auditor Judge]:::agent2
-        K -- Score < 8 + Feedback --> J
-        K -- Score >= 8 --> L[Solutions Accepted]:::process
+    J --> K
+    
+    subgraph Phase 2: Solution Generation
+        K[LLM 1: Solution Generator]:::agent1 --> L[LLM 2: Safety Auditor Judge]:::agent2
+        L -- Score < 8 + Feedback --> K
     end
     
-    L --> M[Export to JSON & Aggregated CSV]:::output
+    L -- Score >= 8 --> M[Solutions Accepted]:::process
+    
+    M --> N[Export to JSON & Aggregated CSV]:::output
 ```
 
 ---
@@ -73,10 +73,7 @@ Relying on a single prompt often leads to inconsistent formatting or hallucinate
   - `Ollama` running `Qwen2.5` locally, providing cost-free and privacy-preserving LLM inference.
   - Separate system and user `.md` prompt templates located in the `prompts/` directory.
 
-### 3. Human-in-the-Loop (HITL)
-An optional safety mechanism where, even if the Judge accepts the output, a human expert can review the generated JSON and choose to accept it or provide manual feedback to force the Generator to iterate again.
-
-### 4. Data Extraction & Experiment Evaluation
+### 3. Data Extraction & Experiment Evaluation
 - The results of both the "No Background Data" and "With Background Data" configurations are run side-by-side.
 - The pipeline tracks the iteration history for *every single round* (what the Generator said, what the Judge scored, and the Judge's reasoning).
 - **Tools Used:** `Pandas` is used to export this massive amount of data into an easy-to-read, long-format `experiment_evaluation.csv` (with `utf-8-sig` encoding) that allows researchers to Pivot, Query, and evaluate whether adding Theoretical Background actually improves the LLM's accuracy or reduces the number of iterations required to pass the Judge.
