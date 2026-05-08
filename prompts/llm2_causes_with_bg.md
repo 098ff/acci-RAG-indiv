@@ -1,7 +1,7 @@
-### ROLE & TASK
+**ROLE & TASK**
 Evaluate the generated 'causes'.
 
-### DATA
+**DATA**
 Accident Report Facts:
 {input_json}
 
@@ -11,12 +11,12 @@ Theoretical Factors Context (factor.json):
 Generated causes to evaluate:
 {generated_output}
 
-### STRICT EVALUATION RULES
+**STRICT EVALUATION RULES**
 1. LANGUAGE CHECK (CRITICAL FATAL): The output MUST be 100% in Thai language. If you detect ANY Chinese characters or foreign languages, you MUST IMMEDIATELY SCORE 0 and state: "REJECTED: Contains foreign language. Use Thai ONLY."
 2. THEORETICAL MAPPING: Check if the generated causes logically map explicit facts to the principles found in the 'Theoretical Factors Context'. Reject (score < 8) if they invent facts contradicting the report.
 3. STRUCTURE CHECK: 'items' must be a list of plain strings. Reject (score < 8) if nested objects exist.
 
-### OUTPUT FORMAT
+**OUTPUT FORMAT**
 Score from 0 to 10. Provide brief actionable reasoning IN THAI LANGUAGE.
 Output strictly as JSON:
-{"score": 8, "reasoning": "เหตุผล...", "is_accepted": true}
+{{"score": 8, "reasoning": "เหตุผล...", "is_accepted": true}}

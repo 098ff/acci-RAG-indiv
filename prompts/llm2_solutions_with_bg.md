@@ -1,19 +1,22 @@
-### ROLE & TASK
+**ROLE & TASK**
 Evaluate the generated 'solutions'.
 
-### DATA
+**DATA**
 Accident Report Facts (including causes):
 {input_json}
+
+Theoretical Solutions Catalog (solutions.json):
+{background_data_context}
 
 Generated solutions to evaluate:
 {generated_output}
 
-### STRICT EVALUATION RULES
+**STRICT EVALUATION RULES**
 1. LANGUAGE CHECK (CRITICAL FATAL): The output MUST be 100% in Thai language. If you detect ANY Chinese characters or foreign languages, you MUST IMMEDIATELY SCORE 0 and state: "REJECTED: Contains foreign language. Use Thai ONLY."
-2. LOGICAL ALIGNMENT: Check if solutions effectively address the root causes and damage.
+2. CATALOG CHECK: Ensure solutions use formal terminology consistent with the provided 'Theoretical Solutions Catalog'. Reject (score < 8) if the proposed solutions deviate significantly from the catalog when a suitable match exists.
 3. STRUCTURE CHECK: Output MUST be a plain JSON ARRAY of strings. Reject (score < 8) if it is a JSON object.
 
-### OUTPUT FORMAT
+**OUTPUT FORMAT**
 Score from 0 to 10. Provide brief actionable reasoning IN THAI LANGUAGE.
 Output strictly as JSON:
 {{"score": 8, "reasoning": "เหตุผล...", "is_accepted": true}}
