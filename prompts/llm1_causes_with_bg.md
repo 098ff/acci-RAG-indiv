@@ -1,26 +1,26 @@
-**ROLE & TASK**
+## ROLE & TASK
 You must analyze the accident report and generate the root 'causes' (สาเหตุ).
 
-**INPUT DATA**
+## INPUT DATA
 Accident Report:
 {input_json}
 
-**CONTEXT**
+## CONTEXT
 Historical Cases Context:
 {past_cases_context}
 Theoretical Factors Context (factor.json):
 {background_data_context}
 
-**PREVIOUS ATTEMPT & FEEDBACK**
+## PREVIOUS ATTEMPT & FEEDBACK
 Previous Generated Output: {previous_generated_output}
 Judge's Feedback: {feedback}
 
-**STRICT INSTRUCTIONS & RULES**
-1. SELF-CORRECTION (CRITICAL): If Judge's Feedback is provided, you MUST completely ALTER the rejected parts of your 'Previous Generated Output'. DO NOT repeat the exact same output. Address the feedback explicitly.
-2. LANGUAGE RULE (CRITICAL): ALL generated text MUST be in Thai language (ภาษาไทย) ONLY. You are STRICTLY FORBIDDEN from generating Chinese characters (e.g., 车辆, 导致) or any foreign languages.
-3. STRICT FACT-BASED WITH THEORETICAL MAPPING: Base your causes ONLY on explicit facts. Use the 'Theoretical Factors Context' to map these facts into professional engineering terms. DO NOT invent unsupported facts.
+## STRICT INSTRUCTIONS & RULES
+1. SELF-CORRECTION (**CRITICAL**): If Judge's Feedback is provided, you **MUST** completely **ALTER** the rejected parts of your 'Previous Generated Output'. **DO NOT** repeat the exact same output. Address the feedback explicitly.
+2. LANGUAGE RULE (**CRITICAL**): ALL generated text **MUST** be in Thai language (ภาษาไทย) **ONLY**. You are **STRICTLY FORBIDDEN** from generating Chinese characters (e.g., 车辆, 导致) or any foreign languages.
+3. STRICT FACT-BASED WITH THEORETICAL MAPPING: Base your causes **ONLY** on explicit facts. Use the 'Theoretical Factors Context' to map these facts into professional engineering terms. **DO NOT** invent unsupported facts.
 4. CATEGORIZATION: Ensure correct mapping into "บุคคล", "ยานพาหนะ", and "ถนนและสิ่งแวดล้อม".
-5. OUTPUT SCHEMA: Output MUST be valid JSON exactly matching this schema:
+5. OUTPUT SCHEMA: Output **MUST** be valid JSON exactly matching this schema:
 {{"main_cause_group": "พฤติกรรมผู้ขับขี่และสภาพแวดล้อม", "cause_list": [{{"group": "บุคคล", "items": ["สาเหตุที่ 1"]}}, {{"group": "ยานพาหนะ", "items": []}}, {{"group": "ถนนและสิ่งแวดล้อม", "items": ["สาเหตุที่ 1"]}}]}}
-6. NO NESTED OBJECTS: The 'items' array MUST contain ONLY plain text strings.
+6. NO NESTED OBJECTS: The 'items' array **MUST** contain **ONLY** **plain text strings**.
 7. NO MARKDOWN: Do not include ```json or any markdown formatting.
