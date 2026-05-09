@@ -72,5 +72,7 @@ For each flagged item, state:
 ---
 
 ## OUTPUT FORMAT
-Output *strictly* as JSON (no markdown):
-{"score": 7, "reasoning": "ตรวจสอบรายการ: (1) 'พฤติกรรมการขับขี่โดยประมาท (Negligent Driving)' — ✅ SUPPORTED รายงานระบุ 'ขับขี่โดยประมาท', Term ตรง. (2) 'ทัศนวิสัยไม่ดีเนื่องจากขับในเวลากลางคืน' — ❌ CONTRADICTED รายงานระบุ 'กลางวัน' ต้องลบออก -2.0. (3) 'ผิวถนนเปียก (Wet Pavement)' — ❌ CONTRADICTED รายงานระบุ 'ผิวถนนแห้ง' ต้องลบออก -2.0. คะแนนรวม: 10-2.0-2.0 = 6. ปัดขึ้นเป็น 6.", "is_accepted": false}
+To ensure accurate scoring, you MUST output your JSON with the 'reasoning' key FIRST. Use the 'reasoning' field as a scratchpad to perform step-by-step checks, calculate penalties explicitly (e.g., "10 - 2 = 8"), and justify your findings IN THAI LANGUAGE. Only after writing the full reasoning should you output the final 'score' key.
+
+Output *strictly* as JSON:
+{{"reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: 10 - 2 = 8", "score": 8}}

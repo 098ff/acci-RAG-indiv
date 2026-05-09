@@ -75,5 +75,7 @@ For Horizon Balance failure: explicitly name the absent horizon and give 2 examp
 ---
 
 ## OUTPUT FORMAT
-Output *strictly* as JSON (no markdown):
-{"score": 7, "reasoning": "ตรวจสอบ: (1) 'ติดตั้งป้ายจำกัดความเร็ว' — ✅ TRACEABLE สาเหตุ 'ขับเร็วเกิน', ✅ SPECIFIC (short-term). (2) 'ปรับปรุงถนน' — ❌ VAGUE ไม่ระบุว่าปรับอะไร -0.5. (3) ไม่มีมาตรการระยะยาว — ❌ HORIZON MISSING -2.0. ต้องเพิ่มเช่น 'ปรับปรุงเรขาคณิตทางแยก' หรือ 'ก่อสร้างเกาะกลาง'. คะแนน: 10-0.5-2.0 = 7.5 → 7.", "is_accepted": false}
+To ensure accurate scoring, you MUST output your JSON with the 'reasoning' key FIRST. Use the 'reasoning' field as a scratchpad to perform step-by-step checks, calculate penalties explicitly (e.g., "10 - 2 = 8"), and justify your findings IN THAI LANGUAGE. Only after writing the full reasoning should you output the final 'score' key.
+
+Output *strictly* as JSON:
+{{"reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: 10 - 2 = 8", "score": 8}}
