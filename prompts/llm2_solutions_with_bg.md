@@ -45,50 +45,55 @@ For EACH generated solution string, apply all three checks:
 
 **CHECK A — Cause Traceability**
 Does this solution directly address one of the confirmed causes in Step 4?
-- TRACEABLE ✅ → no penalty
-- NOT TRACEABLE ❌ (addresses something not in the confirmed causes, e.g. lighting when report says "แสงสว่างปกติ") → penalize -1.0 per item
+- TRACEABLE ✅ → Pass
+- NOT TRACEABLE ❌ (addresses something not in the confirmed causes) → Mark as SEVERE FLAW
 
 **CHECK B — Catalog Alignment**
-Find the catalog entry (from the context above) that best matches this solution's terminology and intent.
-- ALIGNED ✅ (uses exact or near-exact catalog terminology) → no penalty
-- PARTIAL ⚠️ (correct concept, but informal or imprecise language) → penalize -0.5
-- NO MATCH ❌ (no corresponding catalog entry exists in the provided context) → penalize -1.0
+Find the catalog entry (from the context above) that best matches this solution's terminology.
+- ALIGNED ✅ (uses exact or near-exact catalog terminology) → Pass
+- PARTIAL ⚠️ (correct concept, but informal or imprecise language) → Mark as MODERATE FLAW
+- NO MATCH ❌ (no corresponding catalog entry exists in context) → Mark as SEVERE FLAW
 
 **CHECK C — Specificity**
-Is the solution specific enough to be actioned by an engineer? ("ปรับปรุงถนน" alone is NOT specific enough)
-- SPECIFIC ✅ → no penalty
-- VAGUE ❌ → penalize -0.5 per item
+Is the solution specific enough to be actioned by an engineer?
+- SPECIFIC ✅ → Pass
+- VAGUE ❌ ("ปรับปรุงถนน" alone is NOT specific enough) → Mark as MODERATE FLAW
 
 ### STEP 6 — Horizon Balance Check
 Read each catalog entry in the context. Each has a `"horizon"` field ("short" or "long").
-
 For each generated solution, find its matching catalog entry and note its horizon.
 Then check:
-- Is there AT LEAST ONE solution matching a `"short"` horizon catalog entry? 
-- Is there AT LEAST ONE solution matching a `"long"` horizon catalog entry?
+- Is there AT LEAST ONE solution matching a `"short"` horizon? 
+- Is there AT LEAST ONE solution matching a `"long"` horizon?
 
 Verdicts:
-- BOTH PRESENT ✅ → no penalty
-- ONLY SHORT-TERM solutions ❌ → penalize -2.0 total. Specify which long-term catalog categories from the context would be appropriate.
-- ONLY LONG-TERM solutions ❌ → penalize -1.0 total. Specify which short-term catalog categories from the context would be appropriate.
+- BOTH PRESENT ✅ → Pass
+- ONLY SHORT-TERM or ONLY LONG-TERM solutions ❌ → Mark as SEVERE FLAW (Horizon Missing)
 
-### STEP 7 — Compute Score
-Start from 10. Sum all penalties from Steps 3–6. Floor at 0.
-is_accepted = true ONLY if final score >= 8.
+### STEP 7 — Compute Score (Holistic Grading)
+Do NOT do math subtraction. Evaluate the overall quality based on your findings:
+- Score 9-10: Flawless. All items traceable, catalog-aligned, specific, and horizon balance is perfect.
+- Score 7-8: Minor issues. 1-2 items have a [MODERATE FLAW] (e.g., partial catalog match or slightly vague), but NO severe flaws. Horizon balance must be correct.
+- Score 5-6: Moderate issues. 1 or more items have a [SEVERE FLAW] (e.g., NOT TRACEABLE, NO CATALOG MATCH, or HORIZON MISSING).
+- Score 0-4: Fatal flaws. Generic placeholders, structural violations, or completely hallucinated solutions.
 
 ### STEP 8 — Write Actionable Reasoning
 For every flagged item, state:
-1. The solution text
-2. The finding code (NOT TRACEABLE / NO CATALOG MATCH / VAGUE / HORIZON MISSING / etc.)
-3. The exact confirmed cause or catalog entry that proves the issue
-4. The precise correction LLM1 must make, referencing the actual catalog entry name when applicable
+1. The solution text and the finding code (NOT TRACEABLE / NO CATALOG MATCH / VAGUE / HORIZON MISSING / etc.)
+2. The exact confirmed cause or catalog entry that proves the issue
+3. The precise correction LLM1 must make, referencing the actual catalog entry name when applicable
 
 For a Horizon Balance failure, name the specific catalog categories (with their `"horizon"` label) from the provided context that LLM1 should draw from to fix the imbalance.
 
 ---
 
-## OUTPUT FORMAT
-To ensure accurate scoring, you MUST output your JSON with the 'reasoning' key FIRST. Use the 'reasoning' field as a scratchpad to perform step-by-step checks, calculate penalties explicitly (e.g., "10 - 2 = 8"), and justify your findings IN THAI LANGUAGE. Only after writing the full reasoning should you output the final 'score' key.
+## OUTPUT FORMAT (CRITICAL INSTRUCTION)
+กรุณาประเมินผลลัพธ์และให้คะแนน 0-10 โดยคืนค่าผลลัพธ์เป็น JSON รูปแบบด้านล่างนี้เท่านั้น ห้ามมีข้อความอื่นปน
+ข้อควรระวัง: 
+- 'score' ต้องเป็นตัวเลขจำนวนเต็มที่สอดคล้องกับเนื้อหาใน 'reasoning' อย่างเคร่งครัด 
+- คุณต้องเขียน 'reasoning' ก่อนเพื่อคิดวิเคราะห์ (Chain of Thought) แล้วค่อยสรุปเป็น 'score' ในตอนท้าย
 
-Output *strictly* as JSON:
-{{"reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: 10 - 2 = 8", "score": 8}}
+{
+  "reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: สรุปจุดผิดพลาดและคำแนะนำให้ LLM1 นำไปแก้ไข...",
+  "score": 8
+}

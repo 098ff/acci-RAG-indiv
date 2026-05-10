@@ -71,8 +71,13 @@ For each flagged item, state:
 
 ---
 
-## OUTPUT FORMAT
-To ensure accurate scoring, you MUST output your JSON with the 'reasoning' key FIRST. Use the 'reasoning' field as a scratchpad to perform step-by-step checks, calculate penalties explicitly (e.g., "10 - 2 = 8"), and justify your findings IN THAI LANGUAGE. Only after writing the full reasoning should you output the final 'score' key.
+## OUTPUT FORMAT (CRITICAL INSTRUCTION)
+กรุณาประเมินผลลัพธ์และให้คะแนน 0-10 โดยคืนค่าผลลัพธ์เป็น JSON รูปแบบด้านล่างนี้เท่านั้น ห้ามมีข้อความอื่นปน
+ข้อควรระวัง: 
+- 'score' ต้องเป็นตัวเลขจำนวนเต็มที่สอดคล้องกับเนื้อหาใน 'reasoning' อย่างเคร่งครัด 
+- คุณต้องเขียน 'reasoning' ก่อนเพื่อคิดวิเคราะห์ (Chain of Thought) แล้วค่อยสรุปเป็น 'score' ในตอนท้าย
 
-Output *strictly* as JSON:
-{{"reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: 10 - 2 = 8", "score": 8}}
+{
+  "reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: สรุปจุดผิดพลาดและคำแนะนำให้ LLM1 นำไปแก้ไข...",
+  "score": 8
+}

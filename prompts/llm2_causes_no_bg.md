@@ -37,35 +37,42 @@ For EACH generated cause item, perform this check:
 
 **CHECK A — Evidence Test**: Find the specific sentence or field in the report that supports this cause.
   - If you CAN find it → Mark ✅ SUPPORTED
-  - If you CANNOT find it → Mark ❌ HALLUCINATED (penalize: -1.5 per item)
+  - If you CANNOT find it → Mark ❌ HALLUCINATED (SEVERE FLAW)
 
 **CHECK B — Contradiction Test**: Does this cause directly contradict a normal/safe condition stated in the report?
-  - E.g., if report says "แสงสว่างเพียงพอ" but cause says "ทัศนวิสัยไม่ดี" → Mark ❌ CONTRADICTED (penalize: -2.0 per item)
-  - E.g., if report says "กลางวัน" but cause says "ขับรถในเวลากลางคืน" → Mark ❌ CONTRADICTED (penalize: -2.0 per item)
+  - E.g., if report says "แสงสว่างเพียงพอ" but cause says "ทัศนวิสัยไม่ดี" → Mark ❌ CONTRADICTED (SEVERE FLAW)
 
 **CHECK C — Coherence Test**: Is the cause statement internally consistent (does it not combine contradictory sub-facts)?
-  - E.g., "ทัศนวิสัยไม่ดีเนื่องจากผิวถนนแห้ง" → ❌ INCOHERENT (penalize: -1.0 per item)
+  - E.g., "ทัศนวิสัยไม่ดีเนื่องจากผิวถนนแห้ง" → Mark ❌ INCOHERENT (MODERATE FLAW)
 
 **CHECK D — Positive Condition Test**: Does this cause describe a NORMAL or SAFE condition rather than a problem?
-  - E.g., "แสงสว่างเพียงพอ" listed as a cause → ❌ INVALID CAUSE (penalize: -1.5 per item)
+  - E.g., "แสงสว่างเพียงพอ" listed as a cause → Mark ❌ INVALID CAUSE (SEVERE FLAW)
 
 ### STEP 4 — Structure Check
-- Verify items is a flat array of strings. If nested objects exist → penalize -2.0.
+- Verify items is a flat array of strings. If nested objects exist → Mark ❌ FORMAT ERROR (SEVERE FLAW).
 
-### STEP 5 — Compute Score
-Start from 10. Subtract penalties from Steps 3–4. Floor at 0.
+### STEP 5 — Compute Score (Holistic Grading)
+Do NOT do math subtraction. Evaluate the overall quality based on your findings:
+- Score 9-10: Flawless. All items pass all checks.
+- Score 7-8: Minor issues. 1 item has a [MODERATE FLAW], but NO hallucinations or severe flaws.
+- Score 5-6: Moderate issues. 1 or more items have a [SEVERE FLAW] (e.g., HALLUCINATED, CONTRADICTED, INVALID CAUSE).
+- Score 0-4: Fatal flaws. Multiple severe flaws, format errors, or foreign language.
 
 ### STEP 6 — Write Actionable Reasoning
 For each item flagged in Step 3, write:
-- The generated text
-- The finding (HALLUCINATED / CONTRADICTED / INCOHERENT / INVALID CAUSE)
+- The generated text and the finding (HALLUCINATED / CONTRADICTED / etc.)
 - The exact report field that proves it
 - What LLM1 must do instead
 
 ---
 
-## OUTPUT FORMAT
-To ensure accurate scoring, you MUST output your JSON with the 'reasoning' key FIRST. Use the 'reasoning' field as a scratchpad to perform step-by-step checks, calculate penalties explicitly (e.g., "10 - 2 = 8"), and justify your findings IN THAI LANGUAGE. Only after writing the full reasoning should you output the final 'score' key.
+## OUTPUT FORMAT (CRITICAL INSTRUCTION)
+กรุณาประเมินผลลัพธ์และให้คะแนน 0-10 โดยคืนค่าผลลัพธ์เป็น JSON รูปแบบด้านล่างนี้เท่านั้น ห้ามมีข้อความอื่นปน
+ข้อควรระวัง: 
+- 'score' ต้องเป็นตัวเลขจำนวนเต็มที่สอดคล้องกับเนื้อหาใน 'reasoning' อย่างเคร่งครัด 
+- คุณต้องเขียน 'reasoning' ก่อนเพื่อคิดวิเคราะห์ (Chain of Thought) แล้วค่อยสรุปเป็น 'score' ในตอนท้าย
 
-Output *strictly* as JSON:
-{{"reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: 10 - 2 = 8", "score": 8}}
+{
+  "reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: สรุปจุดผิดพลาดและคำแนะนำให้ LLM1 นำไปแก้ไข...",
+  "score": 8
+}

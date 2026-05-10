@@ -41,41 +41,45 @@ List confirmed causes from {input_json}:
 
 **CHECK A — Cause Traceability**
 Does this solution directly address a confirmed cause from Step 4?
-- TRACEABLE ✅ → no penalty
-- NOT TRACEABLE ❌ → penalize -1.0 per item
+- TRACEABLE ✅ → Pass
+- NOT TRACEABLE ❌ → Mark as SEVERE FLAW
 
 **CHECK B — Specificity**
 Is the solution specific enough to be actionable?
-- SPECIFIC ✅ → no penalty  
-- VAGUE ❌ (e.g., "ปรับปรุงถนน" with no detail) → penalize -0.5 per item
+- SPECIFIC ✅ → Pass
+- VAGUE ❌ (e.g., "ปรับปรุงถนน" with no detail) → Mark as MODERATE FLAW
 
 ### STEP 6 — Horizon Balance Check
 Classify each generated solution as short-term or long-term using engineering judgment:
+- Short-term: ป้ายจราจร, เส้นทาง, ไฟจราจร, ด่านตรวจ, เครื่องหมายจราจร ฯลฯ
+- Long-term: ก่อสร้าง, ขยายถนน, เกาะกลาง, Barrier, ปรับเรขาคณิต ฯลฯ
 
-Short-term indicators: ป้ายจราจร, เส้นทาง, ไฟจราจร, ด่านตรวจ, อบรม, กำจัดวัตถุอันตราย, เครื่องหมายจราจร, หมุดสะท้อนแสง, ป้ายเตือน
-Long-term indicators: ก่อสร้าง, ขยายถนน, เกาะกลาง, Barrier, Guardrail, ปรับเรขาคณิต, สะพาน, ทางลอด, วงเวียน, บูรณะผิวทาง, ปรับแนวถนน
+- BOTH PRESENT ✅ → Pass
+- ONLY SHORT-TERM / ONLY LONG-TERM ❌ → Mark as SEVERE FLAW (Horizon Missing)
 
-- BOTH PRESENT ✅ → no penalty
-- ONLY SHORT-TERM ❌ → penalize -2.0. State what long-term measure type would address the confirmed cause.
-- ONLY LONG-TERM ❌ → penalize -1.0. State what short-term measure would complement it.
-
-### STEP 7 — Compute Score
-Start from 10. Apply all penalties. Floor at 0.
-is_accepted = true ONLY if score >= 8.
+### STEP 7 — Compute Score (Holistic Grading)
+Do NOT do math subtraction. Evaluate the overall quality based on your findings:
+- Score 9-10: Flawless. All items traceable, specific, and horizon balance is perfect.
+- Score 7-8: Minor issues. 1-2 items have a [MODERATE FLAW] (e.g., slightly vague), but balance and traceability are correct.
+- Score 5-6: Moderate issues. 1 or more items have a [SEVERE FLAW] (e.g., NOT TRACEABLE, or HORIZON MISSING).
+- Score 0-4: Fatal flaws. Generic placeholders, structural violations, or completely irrelevant solutions.
 
 ### STEP 8 — Write Actionable Reasoning
 For each flagged item:
-1. The solution text
-2. Finding code (NOT TRACEABLE / VAGUE / PLACEHOLDER / HORIZON MISSING)
-3. The confirmed cause it fails to address, or which cause it should address
-4. The precise correction LLM1 must make (give a concrete example of a better solution)
-
-For Horizon Balance failure: explicitly name the absent horizon and give 2 example measure types LLM1 should add.
+1. The solution text and Finding code
+2. The confirmed cause it fails to address (or should address)
+3. The precise correction LLM1 must make (give concrete examples).
+If Horizon Balance failed, explicitly name the absent horizon and give 2 example measure types to add.
 
 ---
 
-## OUTPUT FORMAT
-To ensure accurate scoring, you MUST output your JSON with the 'reasoning' key FIRST. Use the 'reasoning' field as a scratchpad to perform step-by-step checks, calculate penalties explicitly (e.g., "10 - 2 = 8"), and justify your findings IN THAI LANGUAGE. Only after writing the full reasoning should you output the final 'score' key.
+## OUTPUT FORMAT (CRITICAL INSTRUCTION)
+กรุณาประเมินผลลัพธ์และให้คะแนน 0-10 โดยคืนค่าผลลัพธ์เป็น JSON รูปแบบด้านล่างนี้เท่านั้น ห้ามมีข้อความอื่นปน
+ข้อควรระวัง: 
+- 'score' ต้องเป็นตัวเลขจำนวนเต็มที่สอดคล้องกับเนื้อหาใน 'reasoning' อย่างเคร่งครัด 
+- คุณต้องเขียน 'reasoning' ก่อนเพื่อคิดวิเคราะห์ (Chain of Thought) แล้วค่อยสรุปเป็น 'score' ในตอนท้าย
 
-Output *strictly* as JSON:
-{{"reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: 10 - 2 = 8", "score": 8}}
+{
+  "reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: สรุปจุดผิดพลาดและคำแนะนำให้ LLM1 นำไปแก้ไข...",
+  "score": 8
+}
