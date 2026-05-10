@@ -37,11 +37,12 @@ Before generating the JSON, you MUST analyze the report via the `"thought_proces
 ## OUTPUT SCHEMA (JSON ONLY)
 You MUST output a valid JSON containing `"thought_process"` first. DO NOT use markdown.
 {
-  "thought_process": "วิเคราะห์: 'แสงสว่างเพียงพอ' เป็นสภาพปกติ -> ตัดออก ห้ามนำมาเป็นสาเหตุ พฤติกรรมที่ผิดคือ 'ฝ่าไฟแดง' -> จับคู่กับทฤษฎีใน catalog...",
-  "main_cause_group": "พฤติกรรมผู้ขับขี่และสภาพแวดล้อม",
+  "thought_process": "<ให้คุณเขียนวิเคราะห์ทีละขั้นตอนจากรายงานจริงที่ได้รับ ห้ามลอกข้อความนี้>",
+  "main_cause_group": "<ระบุกลุ่มสาเหตุหลัก>",
   "cause_list": [
-    {"group": "บุคคล", "items": ["ผู้ขับขี่ฝ่าสัญญาณไฟแดง"]}, 
-    {"group": "ยานพาหนะ", "items": []}, 
-    {"group": "ถนนและสิ่งแวดล้อม", "items": []}
+    {
+      "group": "<บุคคล หรือ ยานพาหนะ หรือ ถนนและสิ่งแวดล้อม>", 
+      "items": ["<สาเหตุที่สกัดได้ข้อที่ 1>", "<สาเหตุที่สกัดได้ข้อที่ 2>"]
+    }
   ]
 }

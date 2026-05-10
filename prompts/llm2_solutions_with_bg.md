@@ -29,61 +29,55 @@ Check for template text like "มาตรการที่ 1", "มาตร�
 - IF CLEAN → Proceed.
 
 ### STEP 3 — Structure Check
-Output must be a flat JSON array of strings (NOT a JSON object, NOT nested objects).
-- JSON object found (e.g., {"solutions": [...]}) → penalize -2.0
-- Nested objects inside the array → penalize -2.0
+Output must be a JSON object containing `"short_term_solutions"` and `"long_term_solutions"` arrays.
+- IF ARRAYS ARE MISSING ❌ → Mark as FORMAT ERROR (SEVERE FLAW)
 
-### STEP 4 — Extract Confirmed Causes from Report
-List all confirmed causes from {input_json}:
+### STEP 4 — Extract Confirmed Causes
+List confirmed causes from {input_json}:
 - บุคคล: _______________
 - ยานพาหนะ: _______________
 - ถนนและสิ่งแวดล้อม: _______________
-- ลักษณะจุดเกิดเหตุ: _______________
 
 ### STEP 5 — Item-by-Item Solution Check
-For EACH generated solution string, apply all three checks:
+For EACH item in both `short_term_solutions` and `long_term_solutions` arrays:
 
 **CHECK A — Cause Traceability**
-Does this solution directly address one of the confirmed causes in Step 4?
+Does this solution directly address a confirmed cause?
 - TRACEABLE ✅ → Pass
-- NOT TRACEABLE ❌ (addresses something not in the confirmed causes) → Mark as SEVERE FLAW
+- NOT TRACEABLE ❌ → Mark as SEVERE FLAW
 
 **CHECK B — Catalog Alignment**
-Find the catalog entry (from the context above) that best matches this solution's terminology.
-- ALIGNED ✅ (uses exact or near-exact catalog terminology) → Pass
-- PARTIAL ⚠️ (correct concept, but informal or imprecise language) → Mark as MODERATE FLAW
-- NO MATCH ❌ (no corresponding catalog entry exists in context) → Mark as SEVERE FLAW
+Find the catalog entry that best matches this solution's terminology.
+- ALIGNED ✅ → Pass
+- PARTIAL ⚠️ → Mark as MODERATE FLAW
+- NO MATCH ❌ → Mark as SEVERE FLAW
 
 **CHECK C — Specificity**
-Is the solution specific enough to be actioned by an engineer?
+Is the solution specific enough to be actionable?
 - SPECIFIC ✅ → Pass
-- VAGUE ❌ ("ปรับปรุงถนน" alone is NOT specific enough) → Mark as MODERATE FLAW
+- VAGUE ❌ → Mark as MODERATE FLAW
 
 ### STEP 6 — Horizon Balance Check
-Read each catalog entry in the context. Each has a `"horizon"` field ("short" or "long").
-For each generated solution, find its matching catalog entry and note its horizon.
-Then check:
-- Is there AT LEAST ONE solution matching a `"short"` horizon? 
-- Is there AT LEAST ONE solution matching a `"long"` horizon?
+Check the arrays provided by LLM1:
+- Are there items in `short_term_solutions`?
+- Are there items in `long_term_solutions`?
 
-Verdicts:
-- BOTH PRESENT ✅ → Pass
-- ONLY SHORT-TERM or ONLY LONG-TERM solutions ❌ → Mark as SEVERE FLAW (Horizon Missing)
+- BOTH HAVE ITEMS ✅ → Pass
+- ONE OR BOTH ARRAYS ARE EMPTY ❌ → Mark as SEVERE FLAW (Horizon Missing)
 
 ### STEP 7 — Compute Score (Holistic Grading)
-Do NOT do math subtraction. Evaluate the overall quality based on your findings:
-- Score 9-10: Flawless. All items traceable, catalog-aligned, specific, and horizon balance is perfect.
-- Score 7-8: Minor issues. 1-2 items have a [MODERATE FLAW] (e.g., partial catalog match or slightly vague), but NO severe flaws. Horizon balance must be correct.
+Do NOT do math subtraction. Evaluate the overall quality:
+- Score 9-10: Flawless. All items traceable, catalog-aligned, specific, and both short/long arrays have items.
+- Score 7-8: Minor issues. 1-2 items have a [MODERATE FLAW], but NO severe flaws.
 - Score 5-6: Moderate issues. 1 or more items have a [SEVERE FLAW] (e.g., NOT TRACEABLE, NO CATALOG MATCH, or HORIZON MISSING).
 - Score 0-4: Fatal flaws. Generic placeholders, structural violations, or completely hallucinated solutions.
 
 ### STEP 8 — Write Actionable Reasoning
 For every flagged item, state:
-1. The solution text and the finding code (NOT TRACEABLE / NO CATALOG MATCH / VAGUE / HORIZON MISSING / etc.)
+1. The solution text and the finding code
 2. The exact confirmed cause or catalog entry that proves the issue
-3. The precise correction LLM1 must make, referencing the actual catalog entry name when applicable
-
-For a Horizon Balance failure, name the specific catalog categories (with their `"horizon"` label) from the provided context that LLM1 should draw from to fix the imbalance.
+3. The precise correction LLM1 must make
+If Horizon Balance failed, explicitly tell LLM1 to add items to the empty array.
 
 ---
 

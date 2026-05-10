@@ -24,18 +24,22 @@ Before generating the JSON, you MUST analyze via the `"thought_process"` key:
 
 ---
 ## GENERATION RULES
-1. **CAUSE-SOLUTION TRACEABILITY (CRITICAL)**: Every solution MUST directly address a confirmed cause. 
-2. **HORIZON BALANCE REQUIREMENT**: You MUST propose at least one "ระยะสั้น (Short-term)" and one "ระยะยาว (Long-term)" measure.
-3. **NO PLACEHOLDER TEXT**: Use specific details (e.g., "ติดตั้งกล้อง CCTV ตรวจจับการฝ่าไฟแดงบริเวณทางแยก").
-4. **SELF-CORRECTION**: If Judge's Feedback is provided, you MUST meaningfully alter every rejected item.
-5. **LANGUAGE RULE**: ALL text MUST be in Thai (ภาษาไทย) ONLY.
+1. **CAUSE-SOLUTION TRACEABILITY (CRITICAL)**: Every solution MUST directly address a confirmed cause.
+2. **HORIZON SEPARATION**: You MUST separate short-term measures into the `short_term_solutions` array, and long-term measures into the `long_term_solutions` array.
+3. **MULTI-MEASURE ENCOURAGED**: You can list multiple items in each array if needed to address all causes comprehensively.
+4. **NO PLACEHOLDER TEXT**: Use specific details. Do not output template text.
+5. **SELF-CORRECTION**: If Judge's Feedback is provided, you MUST meaningfully alter the rejected items.
+6. **LANGUAGE RULE**: ALL text MUST be in Thai (ภาษาไทย) ONLY.
 
 ## OUTPUT SCHEMA (JSON ONLY)
-You MUST output a valid JSON containing `"thought_process"` and `"solutions"` (array). DO NOT use markdown.
+You MUST output a valid JSON. DO NOT use markdown.
 {
-  "thought_process": "วิเคราะห์: สาเหตุหลักคือ 'ขับขี่ฝ่าไฟแดง' ไม่มีประเด็นเรื่องสภาพถนนหรือแสงสว่าง ดังนั้นมาตรการระยะสั้นคือบังคับใช้กฎหมาย(CCTV) มาตรการระยะยาวคือปรับปรุงสัญญาณไฟ...",
-  "solutions": [
-    "ระยะสั้น: ติดตั้งกล้อง CCTV ตรวจจับการฝ่าไฟแดง",
-    "ระยะยาว: ปรับปรุงระบบสัญญาณไฟจราจรให้เป็นแบบอัตโนมัติ"
+  "thought_process": "<ให้คุณเขียนวิเคราะห์ความเชื่อมโยงกับสาเหตุทีละขั้นตอน ห้ามลอกข้อความนี้>",
+  "short_term_solutions": [
+    "<ระบุมาตรการระยะสั้นที่เจาะจง ข้อที่ 1>",
+    "<ระบุมาตรการระยะสั้นที่เจาะจง ข้อที่ 2 (ถ้ามี)>"
+  ],
+  "long_term_solutions": [
+    "<ระบุมาตรการระยะยาวที่เจาะจง ข้อที่ 1>"
   ]
 }
