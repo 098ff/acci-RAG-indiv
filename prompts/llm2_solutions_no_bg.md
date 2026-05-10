@@ -78,6 +78,7 @@ If Horizon Balance failed, explicitly name the absent horizon and give 2 example
 ข้อควรระวัง: 
 - 'score' ต้องเป็นตัวเลขจำนวนเต็มที่สอดคล้องกับเนื้อหาใน 'reasoning' อย่างเคร่งครัด 
 - คุณต้องเขียน 'reasoning' ก่อนเพื่อคิดวิเคราะห์ (Chain of Thought) แล้วค่อยสรุปเป็น 'score' ในตอนท้าย
+- **CRITICAL: You MUST write the 'reasoning' entirely in THAI language (ภาษาไทย). STRICTLY NO CHINESE CHARACTERS ALLOWED.**
 
 {
   "reasoning": "1. Fact Check: ... 2. Logical Flaw Check: ... 3. Score Calculation: สรุปจุดผิดพลาดและคำแนะนำให้ LLM1 นำไปแก้ไข...",
