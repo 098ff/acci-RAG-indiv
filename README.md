@@ -96,8 +96,7 @@ flowchart TD
         F -- Self-Correction --> G
     end
 
-    D -- Yes --> S([Output Accepted & Exported]):::success
-    D -- Reached Max Iterations --> S
+    D -- Yes / Reached Max Iterations --> S([Output Accepted & Exported]):::success
 ```
 
 - **Tools Used:**
