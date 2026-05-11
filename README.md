@@ -74,6 +74,29 @@ Relying on a single prompt often leads to inconsistent formatting or hallucinate
 - **LLM 1 (The Generator):** Acts as a Traffic Safety AI Engineer. It drafts the causes and solutions based *strictly* on the provided facts and RAG context.
 - **LLM 2 (The Strict Judge):** Acts as a Senior Traffic Safety Auditor. It reviews LLM 1's output against strict grading criteria (e.g., *Is it 100% Thai? Is it hallucinating? Is the JSON schema perfectly plain text strings?*). It scores the output from 0 to 10.
 - **Feedback Loop:** If the score is below 8, the Judge provides reasoning. The Generator then takes this feedback to self-correct and try again (up to a maximum of 5 iterations).
+
+**แผนภาพตรรกะการทำงานของลูปตรวจสอบผลลัพธ์ (Agent Loop Logic Flow):**
+```mermaid
+graph TD
+    classDef gen fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000;
+    classDef judge fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#000;
+    classDef logic fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000;
+    classDef feedback fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#000;
+    classDef success fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#000;
+
+    Input(Context & Task) --> G[LLM 1: Generator<br>Drafts Output JSON]:::gen
+    
+    G --> J[LLM 2: Judge<br>Evaluates Rules & Scores 0-10]:::judge
+    
+    J --> D{Decision Logic:<br>Is Score >= 8?}:::logic
+    
+    D -- No (Score < 8) --> F[Generate Actionable Feedback<br>Targeting specific flaws]:::feedback
+    F -- "Self-Correction Loop<br>(Max 5 Iterations)" --> G
+    
+    D -- Yes (Score >= 8) --> S([Output Accepted & Exported]):::success
+    D -- Reached Max Iterations --> S
+```
+
 - **Tools Used:**
   - `Ollama` running `Qwen2.5` locally, providing cost-free and privacy-preserving LLM inference.
   - Specialized system and user prompt templates located in the `prompts/` directory.
