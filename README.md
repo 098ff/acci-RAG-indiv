@@ -12,28 +12,27 @@ graph TD
     %% Define styles
     classDef input fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
     classDef process fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px;
-    classDef rag fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef agent1 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
-    classDef agent2 fill:#ffebee,stroke:#d32f2f,stroke-width:2px;
+    classDef db fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    classDef model fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
     classDef output fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px;
 
-    A[Test Accident Report JSON]:::input --> B[Information Extraction]:::process
+    A[(Test Accident Report JSON)]:::input --> B[Information Extraction]:::process
     
-    subgraph RAG Context Retrieval
-        B --> C[Retrieve Past Similar Cases<br>ChromaDB]:::rag
+    subgraph rag ["Vector Database & Embedding (ChromaDB + BAAI/bge-m3)"]
+        B --> C[(Past Similar Cases<br>ChromaDB)]:::db
         B --> D{use_factor_bg?}:::process
-        D -- Yes --> E[Retrieve Theoretical Factors<br>ChromaDB]:::rag
+        D -- Yes --> E[(Theoretical Factors<br>ChromaDB)]:::db
         
         B --> F{use_solution_bg?}:::process
-        F -- Yes --> G[Retrieve Theoretical Solutions<br>ChromaDB]:::rag
+        F -- Yes --> G[(Theoretical Solutions<br>ChromaDB)]:::db
     end
     
     C --> H[Phase 1 Prompt Context]:::process
     E -.-> H
     
     subgraph Phase 1: Cause Generation
-        H --> I[LLM 1: Cause Generator]:::agent1
-        I --> J[LLM 2: Safety Auditor Judge]:::agent2
+        H --> I[LLM 1: Cause Generator<br>Qwen2.5 via Ollama]:::model
+        I --> J[LLM 2: Safety Auditor Judge<br>Qwen2.5 via Ollama]:::model
         J -- Score < 8 + Feedback --> I
     end
     
@@ -46,14 +45,14 @@ graph TD
     G -.-> M
     
     subgraph Phase 2: Solution Generation
-        M --> N[LLM 1: Solution Generator]:::agent1
-        N --> O[LLM 2: Safety Auditor Judge]:::agent2
+        M --> N[LLM 1: Solution Generator<br>Qwen2.5 via Ollama]:::model
+        N --> O[LLM 2: Safety Auditor Judge<br>Qwen2.5 via Ollama]:::model
         O -- Score < 8 + Feedback --> N
     end
     
     O -- Score >= 8 --> P[Solutions Accepted]:::process
     
-    P --> Q[Export to JSON & Aggregated CSV]:::output
+    P --> Q[(Export to JSON & Aggregated CSV)]:::output
 ```
 
 ---
