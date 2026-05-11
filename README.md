@@ -21,34 +21,39 @@ graph TD
     
     subgraph RAG Context Retrieval
         B --> C[Retrieve Past Similar Cases<br>ChromaDB]:::rag
-        B --> D{Use Theoretical Background?}:::process
-        D -- Yes --> E[Retrieve Theoretical Factors/Solutions<br>ChromaDB]:::rag
-        D -- No --> F[Empty Background Context]:::process
+        B --> D{use_factor_bg?}:::process
+        D -- Yes --> E[Retrieve Theoretical Factors<br>ChromaDB]:::rag
         
-        C --> G[Compile Full Prompt Context]:::process
-        E --> G
-        F --> G
+        B --> F{use_solution_bg?}:::process
+        F -- Yes --> G[Retrieve Theoretical Solutions<br>ChromaDB]:::rag
     end
     
-    G --> H
+    C --> H[Phase 1 Prompt Context]:::process
+    E -.-> H
     
     subgraph Phase 1: Cause Generation
-        H[LLM 1: Cause Generator]:::agent1 --> I[LLM 2: Safety Auditor Judge]:::agent2
-        I -- Score < 8 + Feedback --> H
+        H --> I[LLM 1: Cause Generator]:::agent1
+        I --> J[LLM 2: Safety Auditor Judge]:::agent2
+        J -- Score < 8 + Feedback --> I
     end
     
-    I -- Score >= 8 --> J[Causes Accepted]:::process
+    J -- Score >= 8 --> K[Causes Accepted]:::process
     
-    J --> K
+    K --> L[Inject Causes into Report JSON]:::process
+    
+    L --> M[Phase 2 Prompt Context]:::process
+    C --> M
+    G -.-> M
     
     subgraph Phase 2: Solution Generation
-        K[LLM 1: Solution Generator]:::agent1 --> L[LLM 2: Safety Auditor Judge]:::agent2
-        L -- Score < 8 + Feedback --> K
+        M --> N[LLM 1: Solution Generator]:::agent1
+        N --> O[LLM 2: Safety Auditor Judge]:::agent2
+        O -- Score < 8 + Feedback --> N
     end
     
-    L -- Score >= 8 --> M[Solutions Accepted]:::process
+    O -- Score >= 8 --> P[Solutions Accepted]:::process
     
-    M --> N[Export to JSON & Aggregated CSV]:::output
+    P --> Q[Export to JSON & Aggregated CSV]:::output
 ```
 
 ---
