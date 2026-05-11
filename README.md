@@ -78,23 +78,31 @@ Relying on a single prompt often leads to inconsistent formatting or hallucinate
 **แผนภาพตรรกะการทำงานของลูปตรวจสอบผลลัพธ์ (Agent Loop Logic Flow):**
 ```mermaid
 graph TD
-    classDef gen fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000;
-    classDef judge fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#000;
-    classDef logic fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000;
-    classDef feedback fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#000;
-    classDef success fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#000;
+    classDef gen fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#000;
+    classDef judge fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#000;
+    classDef logic fill:#fff3e0,stroke:#ef6c00,stroke-width:3px,color:#000;
+    classDef feedback fill:#f3e5f5,stroke:#6a1b9a,stroke-width:3px,color:#000;
+    classDef success fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#000;
 
-    Input(Context & Task) --> G[LLM 1: Generator<br>Drafts Output JSON]:::gen
-    
-    G --> J[LLM 2: Judge<br>Evaluates Rules & Scores 0-10]:::judge
-    
-    J --> D{Decision Logic:<br>Is Score >= 8?}:::logic
-    
-    D -- No (Score < 8) --> F[Generate Actionable Feedback<br>Targeting specific flaws]:::feedback
-    F -- "Self-Correction Loop<br>(Max 5 Iterations)" --> G
-    
-    D -- Yes (Score >= 8) --> S([Output Accepted & Exported]):::success
-    D -- Reached Max Iterations --> S
+    Input[("📑 Input Data<br>(Context & Task)")]:::success --> G
+
+    subgraph "🔄 Iterative Multi-Agent Loop (Actor-Critic)"
+        G["🤖 LLM 1: Generator<br>Drafts Output JSON"]:::gen
+        
+        J["⚖️ LLM 2: Judge<br>Evaluates Rules & Scores (0-10)"]:::judge
+        
+        D{"🎯 Decision Logic<br>Is Score >= 8?"}:::logic
+        
+        F["📝 Actionable Feedback<br>Identifies Specific Flaws"]:::feedback
+        
+        G --> |"Submits Draft"| J
+        J --> D
+        D --> |"❌ No (Score < 8)"| F
+        F -.-> |"🔁 Self-Correction (Max 5x)"| G
+    end
+
+    D ===> |"✅ Yes (Score >= 8)"| S((("🎉 Output Accepted<br>& Exported"))):::success
+    D -.-> |"⚠️ Max Retries Reached"| S
 ```
 
 - **Tools Used:**
